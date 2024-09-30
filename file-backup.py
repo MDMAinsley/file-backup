@@ -43,7 +43,7 @@ def compare_versions(local_file, github_file):
 
 
 # Example: Check if a file needs an update
-if compare_versions("savegame.dat", "path/to/savegame.dat"):
+if compare_versions("test.txt", "test.txt"):
     # Prompt the user to download
     print("You can download the new version.")
     input("Press ENTER to exit...")
