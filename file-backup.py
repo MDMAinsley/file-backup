@@ -1,8 +1,10 @@
 import os
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+# Load environment variables from .env file
+load_dotenv()
 
 # GitHub API details
 GITHUB_REPO = "MDMAinsley/file-backup"
@@ -10,40 +12,58 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 HEADERS = {'Authorization': f'token {GITHUB_TOKEN}'}
 
 
-def get_github_file_version(filename):
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{filename}"
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code == 200:
-        # File exists, returning the SHA or version tag
-        file_data = response.json()
-        return file_data['sha']
-    else:
+# Get last modified date of the local file
+def get_local_last_modified(filename):
+    try:
+        timestamp = os.path.getmtime(filename)
+        return datetime.fromtimestamp(timestamp).isoformat()  # Convert timestamp to ISO format
+    except FileNotFoundError:
         return None
 
 
-def get_local_file_version(filename):
-    # Assuming the local file has a version stored in its metadata or separate version file
-    version_file = f"{filename}.version"
-    if os.path.exists(version_file):
-        with open(version_file, 'r') as vf:
-            return vf.read().strip()
-    return None
+# Get last modified date of the GitHub file by finding the latest commit
+def get_github_last_modified(filename):
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/commits"
+    params = {'path': filename, 'per_page': 1}  # Only fetch the most recent commit affecting the file
+    response = requests.get(url, headers=HEADERS, params=params)
+
+    if response.status_code == 200:
+        commit_data = response.json()[0]  # Get the first commit in the list
+        commit_date = commit_data['commit']['committer']['date']  # ISO-8601 format
+        return commit_date
+    else:
+        print(f"Error fetching last commit for {filename}: {response.status_code}")
+        return None
 
 
-def compare_versions(local_file, github_file):
-    local_version = get_local_file_version(local_file)
-    github_version = get_github_file_version(github_file)
+# Compare the local and GitHub last modified dates
+def compare_file_dates(local_file):
+    local_last_modified = get_local_last_modified(local_file)
+    github_last_modified = get_github_last_modified(local_file)
 
-    if local_version != github_version:
-        print(f"New version available for {local_file}.")
+    if local_last_modified is None:
+        print(f"Local file {local_file} does not exist.")
+        return False
+
+    if github_last_modified is None:
+        print(f"Could not retrieve last modified date from GitHub for {local_file}.")
+        return False
+
+    print(f"Local last modified date: {local_last_modified}")
+    print(f"GitHub last modified date: {github_last_modified}")
+
+    # Compare the two ISO date strings
+    if local_last_modified >= github_last_modified:
+        print(f"{local_file} is up to date.")
         return True
     else:
-        print(f"{local_file} is up to date.")
+        print(f"New version available for {local_file}.")
         return False
 
 
-# Example: Check if a file needs an update
-if compare_versions("test.txt", "test.txt"):
-    # Prompt the user to download
-    print("You can download the new version.")
-    input("Press ENTER to exit...")
+# Example usage:
+filename = "test.txt"  # Replace with the file you want to test
+if compare_file_dates(filename):
+    print("File is up to date.")
+else:
+    print("A new version is available.")
