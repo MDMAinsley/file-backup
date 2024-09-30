@@ -1,12 +1,29 @@
-2024-10-01 00:18:16,051 - DEBUG - Starting new HTTPS connection (1): www.google.com:443
-2024-10-01 00:18:16,182 - DEBUG - https://www.google.com:443 "GET / HTTP/11" 200 None
-2024-10-01 00:18:16,184 - INFO - Connection active.
-2024-10-01 00:18:16,185 - INFO - Running application version v0.1.1
-2024-10-01 00:18:18,222 - INFO - Successfully loaded tracking file.
-2024-10-01 00:18:19,678 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
-2024-10-01 00:18:19,902 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/ HTTP/11" 200 None
-2024-10-01 00:18:19,904 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
-2024-10-01 00:18:20,139 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/.idea HTTP/11" 200 None
-2024-10-01 00:18:20,140 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
-2024-10-01 00:18:20,366 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/.idea/inspectionProfiles HTTP/11" 200 None
-2024-10-01 00:18:22,399 - INFO - Successfully loaded tracking file.
+2024-10-01 00:25:21,197 - DEBUG - Starting new HTTPS connection (1): www.google.com:443
+2024-10-01 00:25:21,334 - DEBUG - https://www.google.com:443 "GET / HTTP/11" 200 None
+2024-10-01 00:25:21,336 - INFO - Connection active.
+2024-10-01 00:25:21,336 - INFO - Running application version v0.1.1
+2024-10-01 00:25:23,380 - INFO - Successfully loaded tracking file.
+2024-10-01 00:25:23,978 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:24,308 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/ HTTP/11" 200 None
+2024-10-01 00:25:24,309 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:24,513 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/.idea HTTP/11" 200 None
+2024-10-01 00:25:24,514 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:24,759 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/.idea/inspectionProfiles HTTP/11" 200 None
+2024-10-01 00:25:24,761 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:25,009 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build HTTP/11" 200 None
+2024-10-01 00:25:25,010 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:25,243 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build/file-backup HTTP/11" 200 None
+2024-10-01 00:25:25,244 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:25,461 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build/file-backup/localpycs HTTP/11" 200 None
+2024-10-01 00:25:25,462 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:25,685 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build/launcher HTTP/11" 200 None
+2024-10-01 00:25:25,687 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:25,908 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build/launcher/localpycs HTTP/11" 200 None
+2024-10-01 00:25:25,910 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:26,137 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build/updater HTTP/11" 200 None
+2024-10-01 00:25:26,138 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:26,350 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/build/updater/localpycs HTTP/11" 200 None
+2024-10-01 00:25:26,353 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:26,576 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/dist HTTP/11" 200 None
+2024-10-01 00:25:26,578 - DEBUG - Starting new HTTPS connection (1): api.github.com:443
+2024-10-01 00:25:26,782 - DEBUG - https://api.github.com:443 "GET /repos/MDMAinsley/file-backup/contents/dist/releases HTTP/11" 200 None

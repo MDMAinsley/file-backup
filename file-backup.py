@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 from datetime import datetime, timezone
 from dateutil import tz
 
-__version__ = "0.1.1"
+# Declare the program version
+__version__ = "0.1.2"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -421,7 +422,7 @@ def download_github_file(github_file, save_location):
 
 def add_github_file_to_tracking(settings):
     # Clean up tracking entries before proceeding
-    whitelist = ['.gitignore', '.idea/', 'updater.spec', 'file-backup.py']
+    whitelist = ['.gitignore', '.idea/', 'updater.spec', '.py', 'build/', 'dist/', '.spec', '.ico']
     github_files = list_github_files(settings, whitelist)
 
     if not github_files:
