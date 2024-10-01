@@ -1,4 +1,7 @@
 {
     "do_setup": false,
-    "files_to_track": {}
+    "files_to_track": {},
+    "whitelist": [
+        ".log"
+    ]
 }

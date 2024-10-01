@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from dateutil import tz
 
 # Declare the program version
-__version__ = "0.1.2"
+__version__ = "0.2.1"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -202,7 +202,7 @@ def print_and_log(message_to_print, logging_func):
 # Function to load settings from the JSON file
 def load_settings():
     if not os.path.exists(tracking_file):
-        save_settings({"do_setup": True, "files_to_track": {}})
+        save_settings({"do_setup": True, "whitelist": [], "files_to_track": {}})
         print_and_log("File not found. Created new default tracking file.", logging.info)
     with open(tracking_file, 'r') as f:
         settings = json.load(f)
@@ -212,6 +212,10 @@ def load_settings():
         settings['do_setup'] = True
         save_settings(settings)
         print_and_log("Added 'do_setup' setting.", logging.info)
+    if 'whitelist' not in settings:
+        settings['whitelist'] = []
+        save_settings(settings)
+        print_and_log("Added 'whitelist' setting.", logging.info)
     if 'files_to_track' not in settings:
         settings['files_to_track'] = {}
         save_settings(settings)
@@ -241,33 +245,92 @@ def get_key_from_value(d, value):
 
 # Function to track a new file and upload if not tracked
 def add_file_to_tracking(settings):
-    github_file = input("Enter the GitHub file path (e.g., folder/name.filetype or name.filetype): ")
-    local_file = input("Enter the local file path or return to menu with 'm': ")
-    if local_file == "m":
-        return
+    # Ask if the user wants to add files from a directory
+    directory_input = input("Would you like to track files from a directory? (yes/no): ").strip().lower()
 
-    # Check if the file is already tracked
-    if 'files_to_track' not in settings:
-        settings['files_to_track'] = {}
+    if directory_input == 'yes':
+        directory_path = input("Enter the directory path: ").strip()
 
-    # Get if a value appears in file to track
-    possible_key = get_key_from_value(settings['files_to_track'], local_file)
+        # Check if the path is a valid directory
+        if os.path.isdir(directory_path):
+            # List all files in the directory
+            files_in_directory = os.listdir(directory_path)
+            num_files = len(files_in_directory)
 
-    if github_file in settings['files_to_track']:
-        print(f"'{github_file}' is already tracking local file '{settings['files_to_track'][github_file]}'.")
-    elif possible_key is not None:
-        print(f"The local file '{local_file}'"
-              f" is already being tracked under a different GitHub entry '{possible_key}'.")
-    else:
-        # Upload the local file to GitHub
-        success = upload_to_github(local_file, github_file)
-        if success:
-            # Update the 'files_to_track' entry in the settings
-            settings['files_to_track'][github_file] = local_file
-            save_settings(settings)
-            print(f"Uploaded {local_file} and added {github_file} to the tracking list.")
+            # Warn if there are more than 10 files
+            if num_files > 10:
+                warning = input(
+                    f"The directory contains {num_files} files. Do you want to proceed? (yes/no): ").strip().lower()
+                if warning != 'yes':
+                    print("Operation canceled.")
+                    return
+
+            # Ask for the GitHub folder name
+            github_folder_name = input(
+                "Enter the name of the GitHub folder where the files should be uploaded: ").strip()
+
+            # Track each file in the directory
+            for file_name in files_in_directory:
+                local_file = os.path.join(directory_path, file_name)
+                github_file = f"{github_folder_name}/{file_name}"  # Concatenate the folder name
+
+                # Check if the file is already tracked
+                if 'files_to_track' not in settings:
+                    settings['files_to_track'] = {}
+
+                # Check if the file is already being tracked
+                possible_key = get_key_from_value(settings['files_to_track'], local_file)
+
+                if github_file in settings['files_to_track']:
+                    print(
+                        f"'{github_file}' is already tracking local file '{settings['files_to_track'][github_file]}'.")
+                elif possible_key is not None:
+                    print(
+                        f"The local file '{local_file}' is already being tracked under a different GitHub entry "
+                        f"'{possible_key}'.")
+                else:
+                    # Upload the local file to GitHub
+                    success = upload_to_github(local_file, github_file)
+                    if success:
+                        # Update the 'files_to_track' entry in the settings
+                        settings['files_to_track'][github_file] = local_file
+                        save_settings(settings)
+                        print(f"Uploaded {local_file} to '{github_file}' and added it to the tracking list.")
+                    else:
+                        print(f"Failed to upload {local_file} to GitHub.")
         else:
-            print(f"Failed to upload {local_file} to GitHub.")
+            print("Invalid directory path.")
+            return
+    else:
+        # Existing functionality for a single file
+        github_file = input("Enter the GitHub file path (e.g., folder/name.filetype or name.filetype): ")
+        local_file = input("Enter the local file path or return to menu with 'm': ")
+        if local_file == "m":
+            return
+
+        # Check if the file is already tracked
+        if 'files_to_track' not in settings:
+            settings['files_to_track'] = {}
+
+        # Get if a value appears in file to track
+        possible_key = get_key_from_value(settings['files_to_track'], local_file)
+
+        if github_file in settings['files_to_track']:
+            print(f"'{github_file}' is already tracking local file '{settings['files_to_track'][github_file]}'.")
+        elif possible_key is not None:
+            print(
+                f"The local file '{local_file}' is already being tracked under a different GitHub entry"
+                f" '{possible_key}'.")
+        else:
+            # Upload the local file to GitHub
+            success = upload_to_github(local_file, github_file)
+            if success:
+                # Update the 'files_to_track' entry in the settings
+                settings['files_to_track'][github_file] = local_file
+                save_settings(settings)
+                print(f"Uploaded {local_file} and added {github_file} to the tracking list.")
+            else:
+                print(f"Failed to upload {local_file} to GitHub.")
 
 
 # Function to clear the console on any os
@@ -422,50 +485,133 @@ def download_github_file(github_file, save_location):
 
 def add_github_file_to_tracking(settings):
     # Clean up tracking entries before proceeding
-    whitelist = ['.gitignore', '.idea/', 'updater.spec', '.py', 'build/', 'dist/', '.spec', '.ico']
+    whitelist = ['.gitignore', '.idea/', 'build/', 'dist/', '.spec', '.py', '.ico']
+    for entry in settings['whitelist']:
+        whitelist.append(entry)
     github_files = list_github_files(settings, whitelist)
 
     if not github_files:
         print("No files available for tracking.")
         return
 
-    # Get currently tracked files
-    tracked_files = settings.get('files_to_track', {}).keys()
+    # Ask if the user wants to add files from a GitHub directory
+    directory_input = input("Would you like to track files from a GitHub directory? (yes/no): ").strip().lower()
 
-    # Display the available files with tracking status
-    print("Available files on GitHub:")
-    for idx, file in enumerate(github_files):
-        tracking_status = " [ALREADY TRACKING]" if file in tracked_files else ""
-        print(f"{idx + 1}. {file}{tracking_status}")
+    if directory_input == 'yes':
+        github_directory_path = input("Enter the GitHub directory path: ").strip()
 
-    selection = input(f"Select a file to download or return to menu (1-{len(github_files)}/m): ")
-    if selection == "m":
-        return
-    selection = int(selection)
-    if 1 <= selection <= len(github_files):
-        github_file = github_files[selection - 1]
+        # Check for already tracked files
+        tracked_files = settings.get('files_to_track', {})
+
+        if not tracked_files:
+            print("No files are currently being tracked from this directory.")
+
+        # Get the files in the specified GitHub directory
+        github_directory_files = [file for file in github_files if file.startswith(github_directory_path)]
+        print("The specified directory contains the following file(s): ")
+        for file in github_directory_files:
+            if file in tracked_files:
+                print(f"{file} [ALREADY TRACKED] (local copy: {tracked_files[file]})")
+            else:
+                print(file)
+
+        if not github_directory_files:
+            print(f"No files found in the GitHub directory '{github_directory_path}'.")
+            return
+
+        # Check if the GitHub directory has more than 10 files
+        num_files_in_directory = len(github_directory_files)
+        if num_files_in_directory > 10:
+            warning = (input(
+                f"The GitHub directory contains {num_files_in_directory} files. Do you want to proceed? (yes/no): ")
+                       .strip().lower())
+            if warning != 'yes':
+                print("Operation canceled.")
+                return
+
+        # Ask for the local download directory
+        download_directory = input("Enter the local directory path where you want to download the files or"
+                                   " (m) for menu: ").strip()
+        if download_directory == "m":
+            return
+        # Check if the download path is valid
+        if os.path.isdir(download_directory):
+            for github_file in github_directory_files:
+                local_file_path = os.path.join(download_directory, os.path.basename(github_file))
+
+                # Download each file from GitHub to the specified local directory
+                if download_github_file(github_file, local_file_path):
+                    if 'files_to_track' not in settings:
+                        settings['files_to_track'] = {}
+
+                    # Track the downloaded file
+                    settings['files_to_track'][github_file] = local_file_path
+                    print(f"Downloaded and tracking '{github_file}' -> '{local_file_path}'")
+                else:
+                    print(f"Failed to download '{github_file}'.")
+        else:
+            create_dir = (input(
+                "The specified download directory does not exist. Would you like to create it? (yes/no): ")
+                          .strip().lower())
+            if create_dir == 'yes':
+                os.makedirs(download_directory)
+                print(f"Created directory: {download_directory}")
+
+                # Retry downloading the files after creating the directory
+                for github_file in github_directory_files:
+                    local_file_path = os.path.join(download_directory, os.path.basename(github_file))
+
+                    if download_github_file(github_file, local_file_path):
+                        if 'files_to_track' not in settings:
+                            settings['files_to_track'] = {}
+
+                        # Track the downloaded file
+                        settings['files_to_track'][github_file] = local_file_path
+                        print(f"Downloaded and tracking '{github_file}' -> '{local_file_path}'")
+                    else:
+                        print(f"Failed to download '{github_file}'.")
+            else:
+                print("Operation canceled.")
+                return
     else:
-        print("Invalid selection.")
-        return
+        # Check for already tracked files
+        tracked_files = settings.get('files_to_track', {})
+        # Display the available files
+        print("Available files on GitHub:")
+        for idx, file in enumerate(github_files):
+            if file in tracked_files:
+                print(f"{idx + 1}. {file} [ALREADY TRACKED] (local copy: {tracked_files[file]})")
+            else:
+                print(f"{idx + 1}. {file}")
 
-    # Check if the file is already being tracked
-    if github_file in settings.get('files_to_track', {}):
-        local_copy_path = settings['files_to_track'][github_file]
-        print(f"File is already being tracked, local copy @ {local_copy_path}")
-        return
+        selection = input(f"Select a file to download (1-{len(github_files)}) or (m) for menu: ")
+        if selection == "m":
+            return
+        selection = int(selection)
+        if 1 <= selection <= len(github_files):
+            github_file = github_files[selection - 1]
+        else:
+            print("Invalid selection.")
+            return
 
-    local_file = choose_save_location()
+        # Check if the file is already being tracked
+        if github_file in settings.get('files_to_track', {}):
+            local_copy_path = settings['files_to_track'][github_file]
+            print(f"File is already being tracked, local copy @ {local_copy_path}")
+            return
 
-    if download_github_file(github_file, local_file):
-        if 'files_to_track' not in settings:
-            settings['files_to_track'] = {}
+        local_file = choose_save_location()
 
-        # Add the file to tracking
-        settings['files_to_track'][github_file] = local_file
-        save_settings(settings)
-        print(f"Tracking {github_file} -> {local_file}")
-    else:
-        print(f"Failed to download or track the file.")
+        if download_github_file(github_file, local_file):
+            if 'files_to_track' not in settings:
+                settings['files_to_track'] = {}
+
+            # Add the file to tracking
+            settings['files_to_track'][github_file] = local_file
+            save_settings(settings)
+            print(f"Tracking {github_file} -> {local_file}")
+        else:
+            print(f"Failed to download or track the file.")
 
 
 # Function to remove a file from tracking
@@ -578,8 +724,9 @@ def main():
             print("2) Add new file to track on Github")
             print("3) Track new file from GitHub")
             print("4) Stop tracking submenu")
+            print("5) Configure whitelist")
             print("q) Exit the application")
-            answer = specific_input("(1/2/3/4/q): ", ["1", "2", "3", "4", "q"])
+            answer = specific_input("(1/2/3/4/5/q): ", ["1", "2", "3", "4", "5", "q"])
             if answer == "1":
                 # Check if files_to_track is empty
                 if not settings['files_to_track']:
@@ -614,6 +761,19 @@ def main():
                     remove_file_from_tracking(settings)
                 elif sub_choice == '2':
                     remove_file_from_github_and_tracking(settings)
+                time.sleep(2)
+            elif answer == "5":
+                while True:
+                    print(f"Current whitelist: {settings['whitelist']}")
+                    print("'m' to return to menu")
+                    new_entry = input("enter new whitelist entry: ")
+                    if new_entry == "m":
+                        break
+                    else:
+                        settings['whitelist'].append(new_entry)
+                        save_settings(settings)
+                    print("Added new entry succesfully.")
+                print(f"Current state of whitelist: {settings['whitelist']}")
                 time.sleep(2)
             elif answer == "q":
                 break
