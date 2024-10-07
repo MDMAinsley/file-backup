@@ -4,26 +4,37 @@ import subprocess
 import sys
 import time
 
+# Variable Declaration
 application_name = "FileBackup_Data.exe"
 launcher_name = "FileBackup_Launcher.exe"
+background_name = "FileBackup_Background.exe"
+icon_name = "icon.ico"
 
 
 # Function to replace the outdated files
 def replace_files(extract_folder, app_dir):
-    # Replace GF_Launcher and GF_Data
+    # Replace necessary files
     new_launcher_path = os.path.join(extract_folder, launcher_name)
     new_data_path = os.path.join(extract_folder, application_name)
+    new_background_path = os.path.join(extract_folder, background_name)
+    new_icon_path = os.path.join(extract_folder, icon_name)
 
     current_launcher_path = os.path.join(app_dir, launcher_name)
     current_data_path = os.path.join(app_dir, application_name)
+    current_background_path = os.path.join(app_dir, background_name)
+    current_icon_path = os.path.join(app_dir, icon_name)
 
     if os.path.exists(new_launcher_path):
         shutil.move(new_launcher_path, current_launcher_path)
-        # print("UPDATER: GF_Launcher.exe replaced.")
 
     if os.path.exists(new_data_path):
         shutil.move(new_data_path, current_data_path)
-        # print("UPDATER: GF_Data.exe replaced.")
+
+    if os.path.exists(new_background_path):
+        shutil.move(new_background_path, current_background_path)
+
+    if os.path.exists(new_icon_path):
+        shutil.move(new_icon_path, current_icon_path)
 
 
 # Function to remove the update zip and temp folder

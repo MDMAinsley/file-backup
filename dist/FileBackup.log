@@ -1,5 +1,0 @@
-2024-10-01 00:10:16,278 - DEBUG - Starting new HTTPS connection (1): www.google.com:443
-2024-10-01 00:10:16,425 - DEBUG - https://www.google.com:443 "GET / HTTP/11" 200 None
-2024-10-01 00:10:16,428 - INFO - Connection active.
-2024-10-01 00:10:16,428 - INFO - Running application version v0.1.0
-2024-10-01 00:10:18,480 - INFO - Successfully loaded tracking file.

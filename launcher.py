@@ -5,7 +5,7 @@ import sys
 import zipfile
 import requests
 
-
+# Variable Declaration
 owner_name = "MDMAinsley"
 repo_name = "file-backup"
 application_name = "FileBackup_Data.exe"
@@ -17,7 +17,9 @@ def get_latest_version(latest_version_url):
     response = requests.get(latest_version_url)
     response.raise_for_status()
     latest_release = response.json()
-    return latest_release['tag_name'].strip()  # Trim any extra spaces
+    latest_version = latest_release['tag_name'].strip()
+    description = latest_release.get('body', 'No description available.')
+    return latest_version, description
 
 
 # Function to download the update zip file
@@ -100,12 +102,13 @@ def main():
         # Get the current and latest version
         current_version_raw = subprocess.run([app_exe_path, "--version"], capture_output=True, text=True).stdout.strip()
         current_version = normalize_version(current_version_raw)
-        latest_version_raw = get_latest_version(latest_version_url)
+        latest_version_raw, description = get_latest_version(latest_version_url)
         latest_version = normalize_version(latest_version_raw)
 
         if current_version != latest_version:
-            if specific_input(f"Update v{latest_version} is available, would you like to update? (y/n): ",
-                              ["y", "Y", "n", "N"]).lower() == "y":
+            print(f"Update v{latest_version} is now available!")
+            print(f"Changelog: \n {description}")
+            if specific_input(f"Would you like to update? (y/n): ", ["y", "Y", "n", "N"]).lower() == "y":
                 print("Starting Update...")
                 # Find the download URL for the zip asset from the latest release
                 response = requests.get(latest_version_url)

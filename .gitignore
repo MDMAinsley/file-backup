@@ -1,1 +1,19 @@
+# Python specific
+*.pyc
+*.pyo
+__pycache__/
+
+# Environment variables
 .env
+
+# PyInstaller generated files
+launcher.spec
+updater.spec
+dist/
+build/
+
+# IDE settings (PyCharm, IntelliJ IDEA, etc.)
+.idea/
+
+# Virtual environments
+.venv/
